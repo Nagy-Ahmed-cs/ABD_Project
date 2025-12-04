@@ -42,6 +42,18 @@ public class ClientRepository {
         }
         return clients;
     }
+    public Client findByEmail(String email) {
+        Document doc = collection.find(new Document("email", email)).first();
+        if (doc == null) return null;
+
+        Client client = new Client();
+        client.setId(doc.getObjectId("_id"));
+        client.setName(doc.getString("name"));
+        client.setEmail(doc.getString("email"));
+        client.setPhone(doc.getString("phone"));
+        client.setAddress(doc.getString("address"));
+        return client;
+    }
 
 //    // Fetch client by ID
 //    public Client findById(ObjectId id) {

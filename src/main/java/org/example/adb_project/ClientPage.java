@@ -26,12 +26,19 @@ public class ClientPage {
         title.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
 
         // Buttons for Sign In or Log In
-        Button signInBtn = new Button("Sign In");
+        Button signInBtn = new Button("Sign Up");
         Button logInBtn = new Button("Log In");
         signInBtn.getStyleClass().add("menu-button");
         logInBtn.getStyleClass().add("menu-button");
+        Button backBtn = new Button("Back");
+        backBtn.getStyleClass().add("dashboard-button");
 
-        HBox buttonBox = new HBox(20, signInBtn, logInBtn);
+        backBtn.setOnAction(e -> {
+            HelloApplication helloApplication=new HelloApplication();
+            helloApplication.start(stage); // pass the same stage
+        });
+
+        HBox buttonBox = new HBox(20, signInBtn, logInBtn,backBtn);
         buttonBox.setStyle("-fx-alignment: center;");
 
         root.getChildren().addAll(title, buttonBox);
@@ -49,13 +56,13 @@ public class ClientPage {
         stage.show();
 
         // Actions
-        signInBtn.setOnAction(e -> showSignInForm(root));
-        logInBtn.setOnAction(e -> showLogInForm(root));
+        signInBtn.setOnAction(e -> showSignInForm(root,stage));
+        logInBtn.setOnAction(e -> showLogInForm(root,stage));
     }
 
 
     // Show Sign In Form
-    private void showSignInForm(VBox root) {
+    private void showSignInForm(VBox root,Stage stage) {
         root.getChildren().clear();
 
         Label title = new Label("Sign Up - New Client");
@@ -75,6 +82,13 @@ public class ClientPage {
 
         Button submitBtn = new Button("Create Account");
         submitBtn.getStyleClass().add("menu-button");
+        Button backBtn = new Button("Back");
+        backBtn.getStyleClass().add("dashboard-button");
+
+        backBtn.setOnAction(e -> {
+           ClientPage clientPage=new ClientPage();
+           clientPage.open(stage);
+        });
 
         submitBtn.setOnAction(e -> {
             String name = nameField.getText();
@@ -86,8 +100,6 @@ public class ClientPage {
                 return; // stop saving
             }
 
-            // TODO: Save client to database
-
 
             Client client=new Client(name,email,phone,address,new ArrayList<>());
             clientRepository.save(client);
@@ -96,11 +108,11 @@ public class ClientPage {
             new DashboardPage().open(new Stage(),client);
         });
 
-        root.getChildren().addAll(title, nameField, emailField, phoneField, addressField, submitBtn);
+        root.getChildren().addAll(title, nameField, emailField, phoneField, addressField, submitBtn,backBtn);
     }
 
     // Show Log In Form
-    private void showLogInForm(VBox root) {
+    private void showLogInForm(VBox root,Stage stage) {
         root.getChildren().clear();
 
         Label title = new Label("Log In - Existing Client");
@@ -111,12 +123,19 @@ public class ClientPage {
 
         Button submitBtn = new Button("Log In");
         submitBtn.getStyleClass().add("menu-button");
-        Hyperlink signInLink = new Hyperlink("Don't have an account? Sign In");
+        Hyperlink signInLink = new Hyperlink("Don't have an account? Sign Up");
         signInLink.setStyle("-fx-font-size: 14px; -fx-text-fill: #2d89ef;");
         signInLink.setOnAction(e -> {
             // Open the Sign In page
-            showSignInForm(root);
+            showSignInForm(root,stage);
 
+        });
+        Button backBtn = new Button("Back");
+        backBtn.getStyleClass().add("dashboard-button");
+
+        backBtn.setOnAction(e -> {
+            ClientPage clientPage=new ClientPage();
+            clientPage.open(stage);
         });
 
         submitBtn.setOnAction(e -> {
@@ -128,18 +147,19 @@ public class ClientPage {
             List <Client> clients=clientRepository.findAll();
             boolean flag=false;
             for(Client c:clients){
-                System.out.println(c.getEmail());
+                //System.out.println(c.getEmail());
                 if(c.getEmail().equals(email)){
                     List<Case> cases=clientRepository.getClientCases(c.getId());
                    // System.out.println(cases.get(0).getClientId()+":"+c.getId());
-                    new DashboardPage().open(new Stage(),c);
+
+                    new DashboardPage().open(stage,c);
                     flag=true;
                     break;
                     //add client Dashboard
                   }}
                     if(!flag){
                     showAlert("Failed","Enter Valid Email");
-                    showLogInForm(root);}
+                    showLogInForm(root,stage);}
 
 
 
@@ -147,7 +167,7 @@ public class ClientPage {
 
         });
 
-        root.getChildren().addAll(title, emailField, submitBtn,signInLink);
+        root.getChildren().addAll(title, emailField, submitBtn,signInLink,backBtn);
     }
     private boolean validateClient(String name, String email, String phone, String address) {
 
@@ -160,6 +180,10 @@ public class ClientPage {
         // 2. Validate email format
         if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
             showError("Invalid email format!");
+            return false;
+        }
+        if (clientRepository.findByEmail(email)!= null) {
+            showError("This email is already in use!");
             return false;
         }
 

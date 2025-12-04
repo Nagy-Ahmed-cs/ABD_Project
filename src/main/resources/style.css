@@ -16,7 +16,26 @@
 }
 
 /* ==================== Buttons ==================== */
-.menu-button, .dashboard-button, .btn {
+.menu-button {
+    -fx-font-size: 14px;
+    -fx-padding: 8px 12px;
+    -fx-background-color: #2d89ef;
+    -fx-text-fill: white;
+    -fx-background-radius: 6px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+    -fx-border-radius: 6px;
+      /* fixed size */
+        -fx-pref-width: 120px;
+        -fx-pref-height: 40px;
+        -fx-min-width: 120px;
+        -fx-min-height: 40px;
+        -fx-max-width: 120px;
+        -fx-max-height: 40px;
+
+}
+ .dashboard-button, .btn {
     -fx-font-size: 14px;
     -fx-padding: 6px 12px;
     -fx-background-color: #2d89ef;

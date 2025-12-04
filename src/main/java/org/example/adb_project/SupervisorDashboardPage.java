@@ -54,11 +54,18 @@ public class SupervisorDashboardPage {
         clientsBtn.getStyleClass().add("dashboard-button");
         employeesBtn.getStyleClass().add("dashboard-button");
         casesBtn.getStyleClass().add("dashboard-button");
+        Button backBtn = new Button("Back");
+        backBtn.getStyleClass().add("dashboard-button");
+
+        backBtn.setOnAction(e -> {
+            EmployeePage employeePage=new EmployeePage();
+            employeePage.open(stage);
+        });
 
         profileBtn.setOnAction(e -> showProfilePopup(stage, supervisor));
         exitBtn.setOnAction(e -> stage.close());
 
-        topBar.getChildren().addAll(profileBtn, clientsBtn, employeesBtn, casesBtn, exitBtn);
+        topBar.getChildren().addAll(profileBtn, clientsBtn, employeesBtn, casesBtn,backBtn, exitBtn);
         root.setTop(topBar);
 
         mainBox.setPadding(new Insets(20));

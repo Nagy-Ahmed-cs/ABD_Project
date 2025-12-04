@@ -66,7 +66,9 @@ public class CaseRepo {
 
         return cases;
     }
-
+    public void delete(ObjectId caseId) {
+        collection.deleteOne(new Document("_id", caseId));
+    }
 
     // Insert case
     public void save(Case c) {

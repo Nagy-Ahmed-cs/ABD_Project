@@ -27,11 +27,18 @@ public class EmployeePage {
 
         Button signUpBtn = new Button("Sign Up");
         Button logInBtn = new Button("Log In");
+        Button backBtn = new Button("Back");
+        backBtn.getStyleClass().add("dashboard-button");
+
+        backBtn.setOnAction(e -> {
+            HelloApplication helloApplication=new HelloApplication();
+            helloApplication.start(stage);
+        });
 
         signUpBtn.getStyleClass().add("menu-button");
         logInBtn.getStyleClass().add("menu-button");
 
-        HBox buttonBox = new HBox(20, signUpBtn, logInBtn);
+        HBox buttonBox = new HBox(20, signUpBtn, logInBtn,backBtn);
         buttonBox.setStyle("-fx-alignment: center;");
 
         root.getChildren().addAll(title, buttonBox);
@@ -61,8 +68,15 @@ public class EmployeePage {
 
         Button loginBtn = new Button("Log In");
         loginBtn.getStyleClass().add("menu-button");
+        Button backBtn = new Button("Back");
+        backBtn.getStyleClass().add("dashboard-button");
 
-        root.getChildren().addAll(lbl, emailField, loginBtn);
+        backBtn.setOnAction(e -> {
+            EmployeePage employeePage=new EmployeePage();
+            employeePage.open(stage);
+        });
+
+        root.getChildren().addAll(lbl, emailField, loginBtn,backBtn);
 
         loginBtn.setOnAction(e -> {
             String email = emailField.getText().trim();
@@ -125,8 +139,15 @@ public class EmployeePage {
 
         Button signUpBtn = new Button("Sign Up");
         signUpBtn.getStyleClass().add("menu-button");
+        Button backBtn = new Button("Back");
+        backBtn.getStyleClass().add("dashboard-button");
 
-        root.getChildren().addAll(lbl, nameField, emailField, departmentField, positionBox, signUpBtn);
+        backBtn.setOnAction(e -> {
+            EmployeePage employeePage=new EmployeePage();
+            employeePage.open(stage); // pass the same stage
+        });
+
+        root.getChildren().addAll(lbl, nameField, emailField, departmentField, positionBox, signUpBtn,backBtn);
 
         signUpBtn.setOnAction(e -> {
             String name = nameField.getText().trim();
@@ -136,6 +157,10 @@ public class EmployeePage {
             String position = selectedPos.getText();
 
             if (!validateEmployeeInput(name, email, department)) return;
+            if (employeeRepository.findByEmail(email)!= null) {
+                showError("This email is already in use!");
+                return ;
+            }
 
             Employee emp = new Employee(name, email, position,new ArrayList<ObjectId>(), department);
             employeeRepository.save(emp);
@@ -159,6 +184,8 @@ public class EmployeePage {
             showError("Invalid email format!");
             return false;
         }
+
+
         return true;
     }
 

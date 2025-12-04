@@ -8,6 +8,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import models.Case;
 import models.Employee;
@@ -25,6 +26,7 @@ public class EmployeeDashboardPage {
 
     private final CaseRepo caseRepository = new CaseRepo();
     private final ActionRepo actionRepository = new ActionRepo();
+    private final EmployeeRepository employeeRepository = new EmployeeRepository();
 
     private final ObservableList<String> PRIORITIES =
             FXCollections.observableArrayList("High", "Medium", "Low");
@@ -47,6 +49,13 @@ public class EmployeeDashboardPage {
 
         Button profileBtn = new Button("Profile");
         Button exitBtn = new Button("Exit");
+        Button backBtn = new Button("Back");
+        backBtn.getStyleClass().add("dashboard-button");
+
+        backBtn.setOnAction(e -> {
+            EmployeePage employeePage=new EmployeePage();
+            employeePage.open(stage);
+        });
 
         profileBtn.getStyleClass().addAll("btn", "btn-primary");
         exitBtn.getStyleClass().addAll("btn", "btn-danger");
@@ -60,7 +69,7 @@ public class EmployeeDashboardPage {
         title.setStyle("-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold;");
         title.getStyleClass().add("page-title");
 
-        topBar.getChildren().addAll(title, spacer, profileBtn, exitBtn);
+        topBar.getChildren().addAll(title, spacer, profileBtn,backBtn, exitBtn);
         root.setTop(topBar);
 
         // ===== TABLES & DATA =====
@@ -231,13 +240,16 @@ public class EmployeeDashboardPage {
         // Title
         TableColumn<Case, String> titleCol = new TableColumn<>("Title");
         titleCol.setCellValueFactory(new PropertyValueFactory<>("title"));
-        titleCol.setMinWidth(180);
-        titleCol.setMaxWidth(180);
+        titleCol.setMinWidth(100);
+        titleCol.setMaxWidth(160);
+
 
         // Status (text color only)
         TableColumn<Case, String> statusCol = new TableColumn<>("Status");
         statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
-        statusCol.setPrefWidth(100);
+        statusCol.setMinWidth(100);
+        statusCol.setMaxWidth(160);
+
         statusCol.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(String status, boolean empty) {
@@ -265,7 +277,8 @@ public class EmployeeDashboardPage {
         // Priority (colored text)
         TableColumn<Case, String> priorityCol = new TableColumn<>("Priority");
         priorityCol.setCellValueFactory(new PropertyValueFactory<>("priority"));
-        priorityCol.setPrefWidth(110);
+        priorityCol.setMinWidth(100);
+        priorityCol.setMaxWidth(160);
         priorityCol.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(String pr, boolean empty) {
@@ -289,7 +302,8 @@ public class EmployeeDashboardPage {
 
         // Actions column: dropdown + add button in same cell
         TableColumn<Case, Void> actionCol = new TableColumn<>("Actions");
-        actionCol.setPrefWidth(500);
+        actionCol.setMinWidth(300);
+        actionCol.setMaxWidth(400);
         actionCol.setCellFactory(col -> new TableCell<>() {
             private final HBox container = new HBox(8);
             private final ComboBox<String> actionDrop = new ComboBox<>();
@@ -297,7 +311,7 @@ public class EmployeeDashboardPage {
 
             {
                 container.setPadding(new Insets(4));
-                actionDrop.setPrefWidth(260);
+                actionDrop.setPrefWidth(200);
                 actionDrop.getStyleClass().add("combo");
                 addActionBtn.getStyleClass().addAll("btn", "btn-primary-sm");
 
@@ -334,11 +348,13 @@ public class EmployeeDashboardPage {
         // CreatedAt / UpdatedAt columns (string display)
         TableColumn<Case, String> createdAtCol = new TableColumn<>("Created At");
         createdAtCol.setCellValueFactory(new PropertyValueFactory<>("createAt"));
-        createdAtCol.setPrefWidth(160);
+        createdAtCol.setMinWidth(100);
+        createdAtCol.setMaxWidth(160);
 
         TableColumn<Case, String> updatedAtCol = new TableColumn<>("Updated At");
         updatedAtCol.setCellValueFactory(new PropertyValueFactory<>("updateAt"));
-        updatedAtCol.setPrefWidth(160);
+        updatedAtCol.setMinWidth(100);
+        updatedAtCol.setMaxWidth(160);
 
         table.getColumns().addAll(titleCol, statusCol, priorityCol, actionCol, createdAtCol, updatedAtCol);
 
@@ -457,9 +473,10 @@ public class EmployeeDashboardPage {
 
     // ========================= profile popup (unchanged, minor styling) =========================
     private void showProfilePopup(Stage stage, Employee employee) {
-        Dialog<Void> dialog = new Dialog<>();
-        dialog.setTitle("Profile");
-        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        Stage dialogStage = new Stage();
+        dialogStage.setTitle("Profile");
+        dialogStage.initOwner(stage);
+        dialogStage.initModality(Modality.APPLICATION_MODAL); // Blocks main window
 
         GridPane grid = new GridPane();
         grid.setHgap(10);
@@ -484,17 +501,17 @@ public class EmployeeDashboardPage {
             employee.setName(nameField.getText());
             employee.setEmail(emailField.getText());
             employee.setDepartment(departmentField.getText());
-            new EmployeeRepository().updateEmployeeInfo(employee);
-            dialog.close();
+            employeeRepository.updateEmployeeInfo(employee);
+            dialogStage.close();
         });
 
         deleteBtn.setOnAction(e -> {
-            new EmployeeRepository().delete(employee.getId());
+            employeeRepository.delete(employee.getId());
             stage.close();
-            dialog.close();
+            dialogStage.close();
         });
-
-        dialog.getDialogPane().setContent(grid);
-        dialog.showAndWait();
+        Scene scene = new Scene(grid);
+        dialogStage.setScene(scene);
+        dialogStage.showAndWait();
     }
 }

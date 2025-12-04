@@ -31,18 +31,25 @@ public class DashboardPage {
         // ===== Top: Profile & Exit =====
         HBox topBar = new HBox();
         topBar.setPadding(new Insets(10));
-        topBar.setSpacing(475); // space between buttons
+        topBar.setSpacing(200); // space between buttons
 
         Button profileIcon = new Button("Profile");
         Button exit = new Button("Exit");
 
+        Button backBtn = new Button("Back");
+        backBtn.getStyleClass().add("dashboard-button");
+
+        backBtn.setOnAction(e -> {
+            ClientPage clientPage=new ClientPage();
+            clientPage.open(stage);
+        });
         profileIcon.setOnMouseClicked(e -> showProfilePopup(stage, client));
         profileIcon.getStyleClass().add("dashboard-button");
 
         exit.setOnMouseClicked(e -> stage.close());
         exit.getStyleClass().add("exit-button");
 
-        topBar.getChildren().addAll(profileIcon, exit);
+        topBar.getChildren().addAll(profileIcon, backBtn,exit);
         root.setTop(topBar);
 
         // ===== Center: Table of Cases =====
@@ -102,8 +109,48 @@ public class DashboardPage {
 
         TableColumn<Case, String> updatedAtCol = new TableColumn<>("Updated At");
         updatedAtCol.setCellValueFactory(new PropertyValueFactory<>("updateAt"));
+        TableColumn<Case, Void> deleteCol = new TableColumn<>("  ");
+        deleteCol.setCellFactory(column -> new TableCell<>() {
+            private final Button deleteBtn = new Button("Delete");
 
-        caseTable.getColumns().addAll(nameCol, statusCol, createAtCol, updatedAtCol);
+            {
+                deleteBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold;");
+                deleteBtn.setOnAction(e -> {
+                    Case c = getTableView().getItems().get(getIndex());
+
+                    // Confirm deletion
+                    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+                    confirm.setTitle("Delete Case");
+                    confirm.setHeaderText("Are you sure you want to delete this case?");
+                    confirm.setContentText(c.getTitle());
+
+                    confirm.showAndWait().ifPresent(response -> {
+                        if (response == ButtonType.OK) {
+                            // Delete from DB
+                            caseRepo.delete(c.getId());
+
+                            // Remove from table
+                            getTableView().getItems().remove(c);
+
+                            showAlert("Deleted", "Case deleted successfully!");
+                        }
+                    });
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(deleteBtn);
+                }
+            }
+        });
+
+
+        caseTable.getColumns().addAll(nameCol, statusCol, createAtCol, updatedAtCol,deleteCol);
         root.setCenter(caseTable);
 
         // ===== Bottom: Create Case Button =====
