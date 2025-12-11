@@ -504,9 +504,19 @@ public class EmployeeDashboardPage {
         grid.addRow(3, updateBtn, deleteBtn);
 
         updateBtn.setOnAction(e -> {
-            employee.setName(nameField.getText());
-            employee.setEmail(emailField.getText());
-            employee.setDepartment(departmentField.getText());
+            String name = nameField.getText();
+            String email = emailField.getText();
+            String department = departmentField.getText();
+            if (name == null || name.trim().isEmpty() ||
+                email == null || email.trim().isEmpty() ||
+                department == null || department.trim().isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "All fields are required!");
+                alert.showAndWait();
+                return;
+            }
+            employee.setName(name);
+            employee.setEmail(email);
+            employee.setDepartment(department);
             employeeRepository.updateEmployeeInfo(employee);
             dialogStage.close();
         });
