@@ -231,17 +231,30 @@ public class DashboardPage {
         TextField phoneField = new TextField(client.getPhone());
         TextField addressField = new TextField(client.getAddress());
 
-        Button saveBtn = new Button("Save Changes");
+        Button saveBtn = new Button("Save");
+
         saveBtn.setOnAction(e -> {
-            client.setName(nameField.getText());
-            client.setEmail(emailField.getText());
-            client.setPhone(phoneField.getText());
-            client.setAddress(addressField.getText());
+
+            String name = nameField.getText();
+            String email = emailField.getText();
+            String phone = phoneField.getText();
+            String address = addressField.getText();
+
+            if (!validateUpdate(client, name, email, phone, address)) {
+                return;
+            }
+
+            client.setName(name);
+            client.setEmail(email);
+            client.setPhone(phone);
+            client.setAddress(address);
 
             clientRepository.update(client);
+
             showAlert("Success", "Client info updated successfully!");
             popup.close();
         });
+
 
         vbox.getChildren().addAll(
                 new Label("Name:"), nameField,
@@ -264,6 +277,40 @@ public class DashboardPage {
         alert.setContentText(msg);
         alert.showAndWait();
     }
+
+
+    private boolean validateUpdate(Client oldClient, String name, String email, String phone, String address) {
+
+        if (name.isEmpty() || email.isEmpty() || phone.isEmpty() || address.isEmpty()) {
+            showAlert("Error", "All fields are required!");
+            return false;
+        }
+
+        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+            showAlert("Error", "Invalid email format!");
+            return false;
+        }
+
+        Client existing = clientRepository.findByEmail(email);
+        if (existing != null && !existing.getId().equals(oldClient.getId())) {
+            showAlert("Error", "This email is already used by another client!");
+            return false;
+        }
+
+        if (!phone.matches("^(010|011|012|015)[0-9]{8}$")) {
+            showAlert("Error", "Invalid phone number! Example: 01012345678");
+            return false;
+        }
+
+        if (address.length() < 4) {
+            showAlert("Error", "Address is too short!");
+            return false;
+        }
+
+        return true;
+    }
+
+
 
     private void createCase(String title, String priority, ObjectId clientId) {
 

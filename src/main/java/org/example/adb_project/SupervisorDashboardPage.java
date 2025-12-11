@@ -8,6 +8,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import models.Case;
 import models.Client;
@@ -160,10 +161,39 @@ public class SupervisorDashboardPage {
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         TableColumn<Employee, String> deptCol = new TableColumn<>("Department");
         deptCol.setCellValueFactory(new PropertyValueFactory<>("department"));
+        TableColumn<Employee, String> roleCol = new TableColumn<>("Role");
         TableColumn<Employee, String> actionsCol = new TableColumn<>("Actions Taken");
         TableColumn<Employee, String> casesCol = new TableColumn<>("Cases Assigned");
 
-        empTable.getColumns().addAll(nameCol, deptCol, casesCol, actionsCol);
+        // Role column with editable ComboBox
+        roleCol.setCellFactory(col -> new TableCell<>() {
+            private final ComboBox<String> comboBox = new ComboBox<>(FXCollections.observableArrayList("Employee", "Supervisor"));
+            {
+                comboBox.setMinWidth(120);
+                comboBox.setOnAction(e -> {
+                    Employee emp = (Employee) getTableRow().getItem();
+                    if (emp != null) {
+                        String newRole = comboBox.getValue();
+                        emp.setPosition(newRole);
+                        employeeRepository.updateEmployeeInfo(emp);
+                    }
+                });
+            }
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || getTableRow().getItem() == null) {
+                    setGraphic(null);
+                } else {
+                    Employee emp = (Employee) getTableRow().getItem();
+                    comboBox.setValue(emp.getPosition());
+                    setGraphic(comboBox);
+                }
+                setText(null);
+            }
+        });
+
+        empTable.getColumns().addAll(nameCol, deptCol, roleCol, casesCol, actionsCol);
 
         ObservableList<Employee> employees = FXCollections.observableArrayList(employeeRepository.findAll());
         empTable.setItems(employees);
@@ -237,10 +267,10 @@ public class SupervisorDashboardPage {
         priorityFilter.setValue("All");
 
         DatePicker fromDate = new DatePicker();
-        fromDate.setPromptText("From Date");
+        fromDate.setPromptText("Action From Date");
 
         DatePicker toDate = new DatePicker();
-        toDate.setPromptText("To Date");
+        toDate.setPromptText("Action to Date");
 
         filterBox.getChildren().addAll(new Label("Status:"), statusFilter,
                 new Label("Priority:"), priorityFilter,
@@ -297,10 +327,20 @@ public class SupervisorDashboardPage {
 
                 boolean date = true;
                 if (from != null || to != null) {
-                    Instant caseTime = c.getCreateAt();
-                    LocalDate caseDate = caseTime.atZone(ZoneId.systemDefault()).toLocalDate();
-                    if (from != null && caseDate.isBefore(from)) date = false;
-                    if (to != null && caseDate.isAfter(to)) date = false;
+                    List<Action> actions = actionRepository.findByCaseId(c.getId());
+                    // If there are no actions, exclude unless no date filter is set
+                    if (actions.isEmpty()) {
+                        date = false;
+                    } else {
+                        // At least one action must match the date range
+                        date = actions.stream().anyMatch(a -> {
+                            if (a.getTakenAt() == null) return false;
+                            LocalDate actionDate = a.getTakenAt().atZone(ZoneId.systemDefault()).toLocalDate();
+                            boolean afterFrom = from == null || !actionDate.isBefore(from);
+                            boolean beforeTo = to == null || !actionDate.isAfter(to);
+                            return afterFrom && beforeTo;
+                        });
+                    }
                 }
                 return st && pr && act && date;
             }).collect(Collectors.toList());
@@ -317,7 +357,57 @@ public class SupervisorDashboardPage {
         mainBox.getChildren().addAll(title, filterBox, caseTable);
     }
 
-    private void showProfilePopup(Stage stage, Employee supervisor) {
-        // Implement profile popup
+    private void showProfilePopup(Stage stage, Employee employee) {
+        Stage dialogStage = new Stage();
+        dialogStage.setTitle("Profile");
+        dialogStage.initOwner(stage);
+        dialogStage.initModality(Modality.APPLICATION_MODAL); // Blocks main window
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+
+        TextField nameField = new TextField(employee.getName());
+        TextField emailField = new TextField(employee.getEmail());
+        TextField departmentField = new TextField(employee.getDepartment());
+
+        Button updateBtn = new Button("Update Info");
+        Button deleteBtn = new Button("Delete Account");
+
+        updateBtn.getStyleClass().addAll("btn", "btn-primary-sm");
+        deleteBtn.getStyleClass().addAll("btn", "btn-danger-sm");
+
+        grid.addRow(0, new Label("Name:"), nameField);
+        grid.addRow(1, new Label("Email:"), emailField);
+        grid.addRow(2, new Label("Department:"), departmentField);
+        grid.addRow(3, updateBtn, deleteBtn);
+
+        updateBtn.setOnAction(e -> {
+            String name = nameField.getText();
+            String email = emailField.getText();
+            String department = departmentField.getText();
+            if (name == null || name.trim().isEmpty() ||
+                email == null || email.trim().isEmpty() ||
+                department == null || department.trim().isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "All fields are required!");
+                alert.showAndWait();
+                return;
+            }
+            employee.setName(name);
+            employee.setEmail(email);
+            employee.setDepartment(department);
+            employeeRepository.updateEmployeeInfo(employee);
+            dialogStage.close();
+        });
+
+        deleteBtn.setOnAction(e -> {
+            employeeRepository.delete(employee.getId());
+            stage.close();
+            dialogStage.close();
+        });
+        Scene scene = new Scene(grid);
+        dialogStage.setScene(scene);
+        dialogStage.showAndWait();
     }
+
 }

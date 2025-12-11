@@ -33,8 +33,8 @@ public class ClientRepository {
                 Document doc = cursor.next();
                 Client c = new Client();
                 c.setId(doc.getObjectId("_id"));
-                c.setName(doc.getString("name"));
-                c.setEmail(doc.getString("email"));
+                c.setName(doc.getString("client_name"));
+                c.setEmail(doc.getString("client_email"));
                 c.setPhone(doc.getString("phone"));
                 c.setAddress(( doc.getString("address")));
                 clients.add(c);
@@ -43,13 +43,13 @@ public class ClientRepository {
         return clients;
     }
     public Client findByEmail(String email) {
-        Document doc = collection.find(new Document("email", email)).first();
+        Document doc = collection.find(new Document("client_email", email)).first();
         if (doc == null) return null;
 
         Client client = new Client();
         client.setId(doc.getObjectId("_id"));
-        client.setName(doc.getString("name"));
-        client.setEmail(doc.getString("email"));
+        client.setName(doc.getString("client_name"));
+        client.setEmail(doc.getString("client_email"));
         client.setPhone(doc.getString("phone"));
         client.setAddress(doc.getString("address"));
         return client;
@@ -72,10 +72,10 @@ public class ClientRepository {
     // Insert new client
     public void save(Client client) {
         Document doc = new Document("_id", new ObjectId())
-                .append("name", client.getName())
-                .append("email", client.getEmail())
-                .append("phone", client.getPhone())
-                .append("address", client.getAddress());
+                .append("client_name", client.getName())
+            .append("client_email", client.getEmail())
+            .append("phone", client.getPhone())
+            .append("address", client.getAddress());
         collection.insertOne(doc);
     }
 
@@ -90,12 +90,12 @@ public class ClientRepository {
                 c.setStatus(doc.getString("status"));
                 c.setPriority(doc.getString("priority"));
 
-                // fix field names
-                if(doc.getDate("createAt") != null) {
-                    c.setCreateAt(doc.getDate("createAt").toInstant());
+                // map created/updated timestamps from DB
+                if (doc.getDate("created_at") != null) {
+                    c.setCreateAt(doc.getDate("created_at").toInstant());
                 }
-                if(doc.getDate("updateAt") != null) {
-                    c.setUpdateAt(doc.getDate("updateAt").toInstant());
+                if (doc.getDate("updated_at") != null) {
+                    c.setUpdateAt(doc.getDate("updated_at").toInstant());
                 }
 
                 // map employeeIds if needed
@@ -110,10 +110,10 @@ public class ClientRepository {
         }
 
         Document updatedDoc = new Document()
-                .append("name", client.getName())
-                .append("email", client.getEmail())
-                .append("phone", client.getPhone())
-                .append("address", client.getAddress());
+            .append("client_name", client.getName())
+            .append("client_email", client.getEmail())
+            .append("phone", client.getPhone())
+            .append("address", client.getAddress());
 
         collection.updateOne(
                 new Document("_id", client.getId()),   // Filter by _id

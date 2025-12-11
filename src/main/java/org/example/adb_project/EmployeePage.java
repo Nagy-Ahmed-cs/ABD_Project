@@ -84,7 +84,7 @@ public class EmployeePage {
 
             Employee emp = employeeRepository.findByEmail(email);
             if (emp != null) {
-               // Alert alert = new Alert(Alert.AlertType.INFORMATION, "Login Successful!");
+                // Alert alert = new Alert(Alert.AlertType.INFORMATION, "Login Successful!");
                 //alert.showAndWait();
 
                 // Open different dashboards based on position

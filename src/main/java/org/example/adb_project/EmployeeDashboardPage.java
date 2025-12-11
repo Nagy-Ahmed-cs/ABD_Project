@@ -300,7 +300,7 @@ public class EmployeeDashboardPage {
             }
         });
 
-        // Actions column: dropdown + add button in same cell
+        // Actions column: dropdown + add button in same cell, hide add button if case is closed/resolved
         TableColumn<Case, Void> actionCol = new TableColumn<>("Actions");
         actionCol.setMinWidth(300);
         actionCol.setMaxWidth(400);
@@ -340,7 +340,13 @@ public class EmployeeDashboardPage {
                 }
                 Case c = getTableView().getItems().get(getIndex());
                 refreshActionDropdown(c);
-                container.getChildren().setAll(actionDrop, addActionBtn);
+                // Only show addActionBtn if status is not Resolved or Closed
+                String status = c.getStatus();
+                if (status != null && (status.equalsIgnoreCase("Resolved") || status.equalsIgnoreCase("Closed"))) {
+                    container.getChildren().setAll(actionDrop);
+                } else {
+                    container.getChildren().setAll(actionDrop, addActionBtn);
+                }
                 setGraphic(container);
             }
         });

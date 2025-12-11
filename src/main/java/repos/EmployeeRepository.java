@@ -28,9 +28,9 @@ public class EmployeeRepository {
                 Document doc = cursor.next();
                 Employee e = new Employee();
                 e.setId(doc.getObjectId("_id"));
-                e.setName(doc.getString("name"));
-                e.setEmail(doc.getString("email"));
-                e.setPosition(doc.getString("position"));
+                e.setName(doc.getString("employee_name"));
+                e.setEmail(doc.getString("employee_email"));
+                e.setPosition(doc.getString("role"));
                 e.setDepartment(doc.getString("department"));
                 employees.add(e);
             }
@@ -45,33 +45,34 @@ public class EmployeeRepository {
 
         Employee e = new Employee();
         e.setId(doc.getObjectId("_id"));
-        e.setName(doc.getString("name"));
-        e.setEmail(doc.getString("email"));
-        e.setPosition(doc.getString("position"));
+        e.setName(doc.getString("employee_name"));
+        e.setEmail(doc.getString("employee_email"));
+        e.setPosition(doc.getString("role"));
         e.setDepartment(doc.getString("department"));
         return e;
     }
 
     // Fetch employee by email
     public Employee findByEmail(String email) {
-        Document doc = collection.find(new Document("email", email)).first();
+        Document doc = collection.find(new Document("employee_email", email)).first();
         if (doc == null) return null;
 
         Employee e = new Employee();
         e.setId(doc.getObjectId("_id"));
-        e.setName(doc.getString("name"));
-        e.setEmail(doc.getString("email"));
-        e.setPosition(doc.getString("position"));
+        e.setName(doc.getString("employee_name"));
+        e.setEmail(doc.getString("employee_email"));
+        e.setPosition(doc.getString("role"));
         e.setDepartment(doc.getString("department"));
         return e;
     }
 
+
     // Insert a new employee
     public void save(Employee e) {
         Document doc = new Document("_id", new ObjectId())
-                .append("name", e.getName())
-                .append("email", e.getEmail())
-                .append("position", e.getPosition())
+                .append("employee_name", e.getName())
+                .append("employee_email", e.getEmail())
+                .append("role", e.getPosition())
                 .append("department", e.getDepartment());
         collection.insertOne(doc);
     }
@@ -79,9 +80,9 @@ public class EmployeeRepository {
     // Update employee
     public void update(Employee e) {
         Document updateDoc = new Document("$set", new Document()
-                .append("name", e.getName())
-                .append("email", e.getEmail())
-                .append("position", e.getPosition())
+                .append("employee_name", e.getName())
+                .append("employee_email", e.getEmail())
+                .append("role", e.getPosition())
                 .append("department", e.getDepartment())
         );
         collection.updateOne(new Document("_id", e.getId()), updateDoc);
@@ -95,9 +96,9 @@ public class EmployeeRepository {
     // Update employee info by ID
     public void updateEmployeeInfo(Employee employee) {
         Document updateDoc = new Document("$set", new Document()
-                .append("name", employee.getName())
-                .append("email", employee.getEmail())
-                .append("position", employee.getPosition())
+                .append("employee_name", employee.getName())
+                .append("employee_email", employee.getEmail())
+                .append("role", employee.getPosition())
                 .append("department", employee.getDepartment())
         );
         collection.updateOne(new Document("_id", employee.getId()), updateDoc);

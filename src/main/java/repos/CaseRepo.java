@@ -76,8 +76,8 @@ public class CaseRepo {
                 .append("title", c.getTitle())
                 .append("status", c.getStatus())
                 .append("priority", c.getPriority())
-                .append("createAt", Date.from(c.getCreateAt()))
-                .append("updateAt", Date.from(c.getUpdateAt()))
+                .append("created_at", Date.from(c.getCreateAt()))
+                .append("updated_at", Date.from(c.getUpdateAt()))
                 .append("employeeIds", c.getEmployeeIds())
                 .append("clientId", c.getClientId());
         collection.insertOne(doc);
@@ -89,7 +89,7 @@ public class CaseRepo {
                 .append("title", c.getTitle())
                 .append("status", c.getStatus())
                 .append("priority", c.getPriority())
-                .append("updateAt", Date.from(c.getUpdateAt()))
+                .append("updated_at", Date.from(c.getUpdateAt()))
                 .append("employeeIds", c.getEmployeeIds())
         );
 
@@ -103,8 +103,12 @@ public class CaseRepo {
         c.setTitle(doc.getString("title"));
         c.setStatus(doc.getString("status"));
         c.setPriority(doc.getString("priority"));
-        c.setCreateAt(doc.getDate("createAt").toInstant());
-        c.setUpdateAt(doc.getDate("updateAt").toInstant());
+        if (doc.getDate("created_at") != null) {
+            c.setCreateAt(doc.getDate("created_at").toInstant());
+        }
+        if (doc.getDate("updated_at") != null) {
+            c.setUpdateAt(doc.getDate("updated_at").toInstant());
+        }
         c.setEmployeeIds((List<ObjectId>) doc.get("employeeIds"));
         c.setClientId(doc.getObjectId("clientId"));
         return c;

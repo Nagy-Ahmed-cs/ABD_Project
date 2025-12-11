@@ -32,9 +32,11 @@ public class ActionRepo {
                 Document doc = cursor.next();
                 Action a = new Action();
                 a.setId(doc.getObjectId("_id"));
-                a.setType(doc.getString("type"));
+                a.setType(doc.getString("action_type"));
                 a.setDescription(doc.getString("description"));
-                a.setTakenAt(doc.getDate("takenAt").toInstant());
+                if (doc.getDate("taken_at") != null) {
+                    a.setTakenAt(doc.getDate("taken_at").toInstant());
+                }
                 a.setCaseId(doc.getObjectId("caseId"));
                 actions.add(a);
             }
@@ -59,9 +61,9 @@ public class ActionRepo {
     // Insert action
     public void save(Action a) {
         Document doc = new Document("_id", new ObjectId())
-                .append("type", a.getType())
+                .append("action_type", a.getType())
                 .append("description", a.getDescription())
-                .append("takenAt", Date.from(a.getTakenAt()))
+                .append("taken_at", Date.from(a.getTakenAt()))
                 .append("caseId", a.getCaseId());
         collection.insertOne(doc);
     }
@@ -74,9 +76,11 @@ public class ActionRepo {
                 Document doc = cursor.next();
                 Action a = new Action();
                 a.setId(doc.getObjectId("_id"));
-                a.setType(doc.getString("type"));
+                a.setType(doc.getString("action_type"));
                 a.setDescription(doc.getString("description"));
-                a.setTakenAt(doc.getDate("takenAt").toInstant());
+                if (doc.getDate("taken_at") != null) {
+                    a.setTakenAt(doc.getDate("taken_at").toInstant());
+                }
                 a.setCaseId(caseId);
                 actions.add(a);
             }
