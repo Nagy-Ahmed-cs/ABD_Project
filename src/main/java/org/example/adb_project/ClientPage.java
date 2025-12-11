@@ -104,8 +104,7 @@ public class ClientPage {
             Client client=new Client(name,email,phone,address,new ArrayList<>());
             clientRepository.save(client);
             showAlert("Success", "Client account created:\n" + name + "\n" + email);
-
-            new DashboardPage().open(new Stage(),client);
+            showLogInForm(root, stage);
         });
 
         root.getChildren().addAll(title, nameField, emailField, phoneField, addressField, submitBtn,backBtn);
