@@ -402,8 +402,9 @@ public class SupervisorDashboardPage {
 
         deleteBtn.setOnAction(e -> {
             employeeRepository.delete(employee.getId());
-            stage.close();
             dialogStage.close();
+            EmployeePage employeePage = new EmployeePage();
+            employeePage.open(stage);
         });
         Scene scene = new Scene(grid);
         dialogStage.setScene(scene);
